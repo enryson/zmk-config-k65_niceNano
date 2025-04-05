@@ -1,9 +1,9 @@
 # Copyright (c) 2020 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
-if SHIELD_PLANCKLOW
+if SHIELD_k65
 
 config ZMK_KEYBOARD_NAME
-    default "plancklow"
+    default "k65"
 
 endif

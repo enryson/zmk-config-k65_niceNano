@@ -1,0 +1,9 @@
+file_format: "1"
+id: k65
+name: k65
+type: shield
+url: https://github.com/enryson/zmk-config-k65_niceNano
+requires: [nice_nano_v2]
+features:
+  - keys
+  - zmk studio

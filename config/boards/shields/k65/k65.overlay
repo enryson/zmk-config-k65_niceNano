@@ -1,5 +1,5 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-#include "plancklow-layouts.dtsi"
+#include "k65-layouts.dtsi"
 
 &physical_layout0 {
     transform = <&matrix_transform>;
