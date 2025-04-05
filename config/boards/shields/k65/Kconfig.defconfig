@@ -1,6 +1,0 @@
-if SHIELD_k65
-
-config ZMK_KEYBOARD_NAME
-    default "k65"
-
-endif
