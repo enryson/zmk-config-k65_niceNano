@@ -9,6 +9,8 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/outputs.h>
 
+
+
  / {
     behaviors {
         
@@ -53,5 +55,9 @@
         //     >;
         // };
     };
+
+    &led_strip {
+    chain-length = <60>;
+};
 };
 
