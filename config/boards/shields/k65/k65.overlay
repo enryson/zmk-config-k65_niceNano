@@ -6,6 +6,10 @@
     transform = <&matrix_transform>;
 };
 
+&led_strip {
+    chain-length = <60>;
+};
+
 / {
     chosen {
         zmk,kscan = &kscan0;
