@@ -1,13 +1,8 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include "k65-layouts.dtsi"
-#include <dt-bindings/led/led.h>
 
 &physical_layout0 {
     transform = <&matrix_transform>;
-};
-
-&led_strip {
-    chain-length = <60>;
 };
 
 / {
