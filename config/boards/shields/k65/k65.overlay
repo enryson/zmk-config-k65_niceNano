@@ -6,7 +6,7 @@
 	transform = <&matrix_transform>;
 };
 
-&zmk {
+zmk {
 	rgb-strips = <&ws2812_strip>;
 };
 
