@@ -1,6 +1,0 @@
-if SHIELT_k65
-
-config k65
-    default "k65"
-
-endif

@@ -1,18 +1,11 @@
 # Copyright (c) 2020 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
-if SHIELD_k65
-
 config ZMK_KEYBOARD_NAME
     default "k65"
-
-if USB_DEVICE_STACK
 
 config USB_NRFX
     default y
 
-endif # USB_DEVICE_STACK
-
 config BT_CTLR
     default BT
-endif
