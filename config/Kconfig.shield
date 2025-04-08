@@ -1,2 +1,0 @@
-config SHIELD_k65
-    def_bool $(shield_list_contains, k65)
