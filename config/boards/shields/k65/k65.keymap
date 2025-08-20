@@ -11,6 +11,9 @@
 #include <dt-bindings/zmk/rgb.h>
 
 / {
+	effects {
+		default_rgb: default_rgb_effect { color = <0 0 0>; };
+	};
 	macros {
 		bt0_red: macro_bt0_red {
 			compatible = "zmk,behavior-macro";
