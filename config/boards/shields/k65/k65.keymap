@@ -48,7 +48,7 @@
 			#binding-cells = <0>;
 			bindings = <
 				&rgb_ug RGB_TOG
-				&wait 500
+				&macro_wait_time 500
 				&rgb_ug RGB_TOG
 			>;
 		};
