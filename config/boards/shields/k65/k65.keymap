@@ -11,9 +11,6 @@
 #include <dt-bindings/zmk/rgb.h>
 
 / {
-	effects {
-		default_rgb: default_rgb_effect { color = <0 0 0>; };
-	};
 	macros {
 		bt0_red: macro_bt0_red {
 			compatible = "zmk,behavior-macro";
@@ -42,6 +39,17 @@
 			bindings = <
 				&bt BT_SEL 2
 				&rgb_ug RGB_COLOR_HSB(120,100,100)
+				
+			>;
+		};
+
+		bt2_cls: restore_default_macro {
+			compatible = "zmk,behavior-macro";
+			#binding-cells = <0>;
+			bindings = <
+				&rgb_ug RGB_TOG
+				&wait 500
+				&rgb_ug RGB_TOG
 			>;
 		};
 	};
