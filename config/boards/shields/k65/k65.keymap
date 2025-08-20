@@ -18,7 +18,7 @@
 			#binding-cells = <0>;
 			bindings = <
 				&bt BT_SEL 0
-				&v &rgb_ug RGB_COLOR_HSB(128,100,100)
+				&rgb_ug RGB_COLOR_HSB(128,100,100)
 			>;
 		};
 
@@ -28,7 +28,7 @@
 			#binding-cells = <0>;
 			bindings = <
 				&bt BT_SEL 1
-				&v &rgb_ug RGB_COLOR_HSB(240,100,100)
+				&rgb_ug RGB_COLOR_HSB(240,100,100)
 			>;
 		};
 
@@ -38,7 +38,7 @@
 			#binding-cells = <0>;
 			bindings = <
 				&bt BT_SEL 2
-				&v &rgb_ug RGB_COLOR_HSB(120,100,100)
+				&rgb_ug RGB_COLOR_HSB(120,100,100)
 			>;
 		};
 	};
