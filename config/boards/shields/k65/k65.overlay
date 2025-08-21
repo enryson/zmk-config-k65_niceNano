@@ -81,7 +81,7 @@
 	soft_on_off {
 		compatible = "zmk,soft-on-ff-gpio";
 		input-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-		wakeup-sources = <&kscan>;
+		wakeup-sources = <&kscan0>;
 	};
 
 	keys {
