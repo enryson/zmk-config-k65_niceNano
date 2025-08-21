@@ -63,7 +63,7 @@
         compatible = "zmk,wakeup-trigger-key";
         trigger = <&wakeup_key>;
         wakeup-source;
-        extra-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+        extra-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
     };
 
 	soft_off_wakers {
@@ -80,14 +80,14 @@
 
 	soft_on_off {
 		compatible = "zmk,soft-on-ff-gpio";
-		input-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		input-gpios = <&gpio0 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 		wakeup-sources = <&kscan0>;
 	};
 
 	keys {
         compatible = "gpio-keys";
         wakeup_key: wakeup_key {
-			gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			gpios = <&gpio0 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 		};
     };
 	
