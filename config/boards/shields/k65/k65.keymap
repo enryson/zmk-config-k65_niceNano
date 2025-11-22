@@ -56,8 +56,14 @@
 			compatible = "zmk,behavior-mod-morph";
 			label = "Shift+ESC -> ~";
 			#binding-cells = <0>;
-			
 			bindings = <&kp ESC>, <&kp TILDE>;
+			mods = <(MOD_LSFT|MOD_RSFT)>;
+		};
+		shift_bspc_del: shift_bspc_del {
+			compatible = "zmk,behavior-mod-morph";
+			label = "Shift+BSPC -> DEL";
+			#binding-cells = <0>;
+			bindings = <&kp BSPC>, <&kp DEL>;
 			mods = <(MOD_LSFT|MOD_RSFT)>;
 		};
 	};
