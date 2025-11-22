@@ -57,9 +57,8 @@
 			label = "Shift+ESC -> ~";
 			#binding-cells = <0>;
 			
-			modifiers = <MOD_LSFT>;
-			base-binding = <&kp ESC>;
-			modified-binding = <&kp TILDE>;
+			bindings = <&kp ESC>, <&kp TILDE>;
+			mods = <(MOD_LSFT|MOD_RSFT)>;
 		};
 	};
 	keymap {
