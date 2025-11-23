@@ -12,6 +12,12 @@
 		zmk,underglow = &led_strip;
 	};
 	
+	&ws2812 {
+        status = "okay";
+        auto-off-usb = <0>;
+        auto-off-bluetooth = <1>;
+    };
+	
 	matrix_transform: keymap_transform_0 {
 		compatible = "zmk,matrix-transform";
 		columns = <14>;
