@@ -11,8 +11,8 @@
 		zmk,physical-layout = &physical_layout0;
 		zmk,underglow = &led_strip;
 	};
-	
-	&ws2812 {
+
+	led_strip: ws2812 {
         status = "okay";
         auto-off-usb = <0>;
         auto-off-bluetooth = <1>;
