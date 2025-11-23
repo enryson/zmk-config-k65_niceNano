@@ -12,12 +12,6 @@
 		zmk,underglow = &led_strip;
 	};
 	
-	&led_strip {
-        status = "okay";
-        auto-off-usb = <0>;
-        auto-off-bluetooth = <1>;
-    };
-	
 	matrix_transform: keymap_transform_0 {
 		compatible = "zmk,matrix-transform";
 		columns = <14>;
