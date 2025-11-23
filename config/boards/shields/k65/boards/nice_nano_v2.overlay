@@ -36,14 +36,10 @@
 		LED_COLOR_ID_RED
 		LED_COLOR_ID_BLUE>;
 	};
-};
+};F
 
 / {
 	chosen {
 		zmk,underglow = &led_strip;
 	};
-};
-
-&led_strip {
-	zmk,auto-off-bluetooth;
 };

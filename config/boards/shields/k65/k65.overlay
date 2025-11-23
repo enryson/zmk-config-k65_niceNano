@@ -11,6 +11,9 @@
 		zmk,physical-layout = &physical_layout0;
 		zmk,underglow = &led_strip;
 	};
+	ws2812: ws2812@0 {
+		zmk,auto-off-bluetooth = <1>;
+	};
 	
 	matrix_transform: keymap_transform_0 {
 		compatible = "zmk,matrix-transform";
@@ -58,37 +61,37 @@
 		, <&gpio0 24 GPIO_ACTIVE_HIGH>
 		;
 	};
-
+	
 	wakeup_source: wakeup_source {
-        compatible = "zmk,wakeup-trigger-key";
-        trigger = <&wakeup_key>;
-        wakeup-source;
-        extra-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
-    };
-
+		compatible = "zmk,wakeup-trigger-key";
+		trigger = <&wakeup_key>;
+		wakeup-source;
+		extra-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+	};
+	
 	soft_off_wakers {
 		compatible = "zmk,soft-off-wakeup-sources";
 		wakeup-sources = <&wakeup_source>;
 	};
-
-    soft_off_behavior_key {
-        compatible = "zmk,behavior-key";
-        status = "okay";
-        bindings = <&soft_off>;
-        key = <&wakeup_key>;
-    };
-
+	
+	soft_off_behavior_key {
+		compatible = "zmk,behavior-key";
+		status = "okay";
+		bindings = <&soft_off>;
+		key = <&wakeup_key>;
+	};
+	
 	soft_on_off {
 		compatible = "zmk,soft-on-ff-gpio";
 		input-gpios = <&gpio0 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 		wakeup-sources = <&kscan0>;
 	};
-
+	
 	keys {
-        compatible = "gpio-keys";
-        wakeup_key: wakeup_key {
+		compatible = "gpio-keys";
+		wakeup_key: wakeup_key {
 			gpios = <&gpio0 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 		};
-    };
+	};
 	
 };
