@@ -99,7 +99,10 @@
 			label = "ALT+F4 Macro";
 			#binding-cells = <0>;
 			bindings = <
-			&kp LALT &kp F4
+			&kp LALT PRESS// segura ALT
+			&kp F4  PRESS// segura F4
+			&kp F4  RELEASE// solta F4
+			&kp LALT RELEASE// solta ALT
 			>;
 		};
 	};
