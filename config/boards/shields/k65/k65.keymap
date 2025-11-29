@@ -95,6 +95,13 @@
 			mods = <(MOD_LALT)>;
 		};
 	};
+	key_overrides {
+        up_bspc_shift: up_bspc_shift {
+            compatible = "zmk,key-override";
+            when-pressed = <&kp LS(BSPC)>;
+            keycodes = <UP BSPC>;
+        };
+    };
 	keymap {
 		compatible = "zmk,keymap";
 		default_layer {
