@@ -92,7 +92,7 @@
 			label = "ALT+4 -> ALT+F4";
 			#binding-cells = <0>;
 			bindings = <&kp N4>, <&alt_f4_macro>;
-			mods = <(MOD_LALT|MOD_RALT)>;
+			mods = <(MOD_LALT)>;
 		};
 		alt_f4_macro: alt_f4_macro {
 			compatible = "zmk,behavior-macro";
