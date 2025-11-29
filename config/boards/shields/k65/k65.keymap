@@ -84,7 +84,7 @@
 			compatible = "zmk,behavior-mod-morph";
 			label = "Shift+BSPC -> DEL";
 			#binding-cells = <0>;
-			bindings = <&kp BSPC>, <&kp DEL>;
+			bindings = <&kp BSPC>, <&kp LS(DEL)>;
 			mods = <(MOD_LSFT)>;
 		};
 		alt4_f4: alt4_f4 {
