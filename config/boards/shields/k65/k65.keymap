@@ -91,9 +91,10 @@
 			compatible = "zmk,behavior-mod-morph";
 			label = "ALT+4 -> ALT+F4";
 			#binding-cells = <0>;
-			bindings = <&kp N4>, <&kp F4>;
+			bindings = <&kp K4>, <&kp F4>;
 			mods = <(MOD_LALT|MOD_RALT)>;
 		};
+		
 	};
 	keymap {
 		compatible = "zmk,keymap";
