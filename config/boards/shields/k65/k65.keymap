@@ -91,10 +91,17 @@
 			compatible = "zmk,behavior-mod-morph";
 			label = "ALT+4 -> ALT+F4";
 			#binding-cells = <0>;
-			bindings = <&kp K4>, <&kp F4>;
+			bindings = <&kp N4>, <&alt_f4_macro>;
 			mods = <(MOD_LALT|MOD_RALT)>;
 		};
-		
+		alt_f4_macro: alt_f4_macro {
+			compatible = "zmk,behavior-macro";
+			label = "ALT+F4 Macro";
+			#binding-cells = <0>;
+			bindings = <
+			&kp LALT &kp F4
+			>;
+		};
 	};
 	keymap {
 		compatible = "zmk,keymap";
