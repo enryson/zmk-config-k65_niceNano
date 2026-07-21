@@ -10,6 +10,24 @@
 		zmk,kscan = &kscan0;
 		zmk,physical-layout = &physical_layout0;
 		zmk,underglow = &led_strip;
+		zmk,rgb-key-indicators = &rgb_key_indicators;
+	};
+
+	/*
+	 * Initial LED map assumes the chain follows the physical keys row by row.
+	 * Use the diagnostic RGB effect to verify the indices on the keyboard.
+	 */
+	rgb_key_indicators: rgb-key-indicators {
+		compatible = "zmk,rgb-key-indicators";
+		capslock-led = <28>;
+		fn-layer = <1>;
+		fn-leds = <
+			0 1 2 3 4 5 6 7 8 9 10 11 12 13
+			14 15 16 17 18 19 21 22 23
+			28 34 35 36 37 39
+			42 43 44 45 46 49 50 51 52
+			58 59 60
+		>;
 	};
 	
 	ws2812{

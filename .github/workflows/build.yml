@@ -1,6 +1,113 @@
 name: Build ZMK firmware
+
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
+  matrix:
+    runs-on: ubuntu-22.04
+    outputs:
+      build_matrix: ${{ env.build_matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read build matrix
+        run: echo "build_matrix=$(yq -oj -I0 build.yaml)" >> "$GITHUB_ENV"
+
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@v0.3.0
+    runs-on: ubuntu-latest
+    container:
+      image: zmkfirmware/zmk-build-arm:stable
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.build_matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare build variables
+        shell: bash
+        run: |
+          build_dir="$(mktemp -d)"
+          artifact_name="${{ matrix.shield }}-${{ matrix.board }}-zmk"
+          echo "build_dir=$build_dir" >> "$GITHUB_ENV"
+          echo "artifact_name=$artifact_name" >> "$GITHUB_ENV"
+
+      - name: Cache west modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+            zmk/
+          key: ${{ runner.os }}-zmk-${{ hashFiles('config/west.yml', 'build.yaml', 'patches/*.patch') }}
+          restore-keys: |
+            ${{ runner.os }}-zmk-
+
+      - name: Initialize west workspace
+        run: west init -l config
+
+      - name: Update west modules
+        run: west update --fetch-opt=--filter=tree:0
+
+      - name: Apply per-key RGB patch
+        shell: bash
+        run: |
+          patch="$GITHUB_WORKSPACE/patches/zmk-per-key-rgb.patch"
+          if git -C zmk apply --check "$patch"; then
+            git -C zmk apply "$patch"
+          elif git -C zmk apply --reverse --check "$patch"; then
+            echo "Per-key RGB patch already applied"
+          else
+            echo "Per-key RGB patch does not apply to the selected ZMK revision" >&2
+            exit 1
+          fi
+
+      - name: Export Zephyr CMake package
+        run: west zephyr-export
+
+      - name: Build ${{ matrix.shield }}
+        shell: bash
+        run: |
+          west_args=(
+            -s zmk/app
+            -d "$build_dir"
+            -b "${{ matrix.board }}"
+          )
+          if [[ -n "${{ matrix.snippet }}" ]]; then
+            west_args+=(-S "${{ matrix.snippet }}")
+          fi
+
+          cmake_args=(-DZMK_CONFIG="$GITHUB_WORKSPACE/config")
+          if [[ -n "${{ matrix.shield }}" ]]; then
+            cmake_args+=(-DSHIELD="${{ matrix.shield }}")
+          fi
+
+          west build "${west_args[@]}" -- "${cmake_args[@]}"
+
+      - name: Collect firmware
+        shell: bash
+        run: |
+          mkdir "$build_dir/artifacts"
+          cp "$build_dir/zephyr/zmk.uf2" "$build_dir/artifacts/$artifact_name.uf2"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ env.artifact_name }}
+          path: ${{ env.build_dir }}/artifacts
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Merge firmware artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: firmware
+          pattern: artifact-*
+          delete-merged: true

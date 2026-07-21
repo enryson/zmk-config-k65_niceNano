@@ -1,0 +1,113 @@
+diff --git a/app/dts/bindings/zmk,rgb-key-indicators.yaml b/app/dts/bindings/zmk,rgb-key-indicators.yaml
+new file mode 100644
+index 00000000..4684289d
+--- /dev/null
++++ b/app/dts/bindings/zmk,rgb-key-indicators.yaml
+@@ -0,0 +1,21 @@
++# Copyright (c) 2026 The ZMK Contributors
++# SPDX-License-Identifier: MIT
++
++description: Per-key RGB indicators layered over underglow effects
++
++compatible: "zmk,rgb-key-indicators"
++
++properties:
++  capslock-led:
++    type: int
++    required: true
++    description: LED index used for the Caps Lock indicator
++
++  fn-layer:
++    type: int
++    required: true
++    description: Layer index whose available functions should be highlighted
++
++  fn-leds:
++    type: array
++    required: true
++    description: LED indices highlighted while the Fn layer is active
+diff --git a/app/src/rgb_underglow.c b/app/src/rgb_underglow.c
+index 2c257d7f..ad37045a 100644
+--- a/app/src/rgb_underglow.c
++++ b/app/src/rgb_underglow.c
+@@ -18,6 +18,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+ #include <zmk/rgb_underglow.h>
+ 
+ #include <zmk/activity.h>
++#include <zmk/hid_indicators.h>
++#include <zmk/keymap.h>
+ #include <zmk/usb.h>
+ #include <zmk/event_manager.h>
+ #include <zmk/events/activity_state_changed.h>
+@@ -44,6 +46,7 @@ enum rgb_underglow_effect {
+     UNDERGLOW_EFFECT_BREATHE,
+     UNDERGLOW_EFFECT_SPECTRUM,
+     UNDERGLOW_EFFECT_SWIRL,
++    UNDERGLOW_EFFECT_DIAGNOSTIC,
+     UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
+ };
+ 
+@@ -142,6 +145,50 @@ static void zmk_rgb_underglow_effect_swirl(void) {
+     state.animation_step = state.animation_step % HUE_MAX;
+ }
+ 
++static void zmk_rgb_underglow_effect_diagnostic(void) {
++    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
++        pixels[i] = (struct led_rgb){r : 0, g : 0, b : 0};
++    }
++
++    const int pixel = state.animation_step / 10;
++    pixels[pixel] = hsb_to_rgb(hsb_scale_min_max((struct zmk_led_hsb){h : 0, s : 100, b : 100}));
++
++    state.animation_step = (state.animation_step + 1) % (STRIP_NUM_PIXELS * 10);
++}
++
++#if DT_HAS_CHOSEN(zmk_rgb_key_indicators)
++#define KEY_INDICATORS DT_CHOSEN(zmk_rgb_key_indicators)
++
++static const uint8_t fn_leds[] = DT_PROP(KEY_INDICATORS, fn_leds);
++
++BUILD_ASSERT(DT_PROP(KEY_INDICATORS, capslock_led) < STRIP_NUM_PIXELS,
++             "Caps Lock LED index exceeds the RGB chain length");
++
++#define ASSERT_FN_LED(node_id, prop, idx)                                                         \
++    BUILD_ASSERT(DT_PROP_BY_IDX(node_id, prop, idx) < STRIP_NUM_PIXELS,                           \
++                 "Fn LED index exceeds the RGB chain length");
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_leds, ASSERT_FN_LED)
++
++static void zmk_rgb_underglow_apply_key_indicators(void) {
++    struct zmk_led_hsb indicator_hsb = state.color;
++    indicator_hsb.h = 0;
++    indicator_hsb.s = 100;
++    const struct led_rgb red = hsb_to_rgb(hsb_scale_min_max(indicator_hsb));
++
++    if (zmk_hid_indicators_get_current_profile() & BIT(1)) {
++        pixels[DT_PROP(KEY_INDICATORS, capslock_led)] = red;
++    }
++
++    if (zmk_keymap_layer_active(DT_PROP(KEY_INDICATORS, fn_layer))) {
++        for (int i = 0; i < ARRAY_SIZE(fn_leds); i++) {
++            pixels[fn_leds[i]] = red;
++        }
++    }
++}
++#else
++static void zmk_rgb_underglow_apply_key_indicators(void) {}
++#endif
++
+ static void zmk_rgb_underglow_tick(struct k_work *work) {
+     switch (state.current_effect) {
+     case UNDERGLOW_EFFECT_SOLID:
+@@ -156,8 +203,12 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
+     case UNDERGLOW_EFFECT_SWIRL:
+         zmk_rgb_underglow_effect_swirl();
+         break;
++    case UNDERGLOW_EFFECT_DIAGNOSTIC:
++        zmk_rgb_underglow_effect_diagnostic();
++        break;
+     }
+ 
++    zmk_rgb_underglow_apply_key_indicators();
+     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+     if (err < 0) {
+         LOG_ERR("Failed to update the RGB strip (%d)", err);
