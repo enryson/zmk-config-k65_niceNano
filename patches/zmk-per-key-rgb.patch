@@ -47,7 +47,7 @@ index 2c257d7f..ad37045a 100644
      UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
  };
  
-@@ -142,6 +145,50 @@ static void zmk_rgb_underglow_effect_swirl(void) {
+@@ -142,6 +145,68 @@ static void zmk_rgb_underglow_effect_swirl(void) {
      state.animation_step = state.animation_step % HUE_MAX;
  }
  
@@ -75,19 +75,37 @@ index 2c257d7f..ad37045a 100644
 +                 "Fn LED index exceeds the RGB chain length");
 +DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_leds, ASSERT_FN_LED)
 +
++static struct led_rgb complementary_color(struct led_rgb color) {
++    const uint8_t low = MIN(color.r, MIN(color.g, color.b));
++    const uint8_t high = MAX(color.r, MAX(color.g, color.b));
++
++    return (struct led_rgb){
++        r : high + low - color.r,
++        g : high + low - color.g,
++        b : high + low - color.b
++    };
++}
++
 +static void zmk_rgb_underglow_apply_key_indicators(void) {
-+    struct zmk_led_hsb indicator_hsb = state.color;
-+    indicator_hsb.h = 0;
-+    indicator_hsb.s = 100;
-+    const struct led_rgb red = hsb_to_rgb(hsb_scale_min_max(indicator_hsb));
++    if (state.current_effect == UNDERGLOW_EFFECT_DIAGNOSTIC) {
++        return;
++    }
++
++    bool highlighted[STRIP_NUM_PIXELS] = {};
 +
 +    if (zmk_hid_indicators_get_current_profile() & BIT(1)) {
-+        pixels[DT_PROP(KEY_INDICATORS, capslock_led)] = red;
++        highlighted[DT_PROP(KEY_INDICATORS, capslock_led)] = true;
 +    }
 +
 +    if (zmk_keymap_layer_active(DT_PROP(KEY_INDICATORS, fn_layer))) {
 +        for (int i = 0; i < ARRAY_SIZE(fn_leds); i++) {
-+            pixels[fn_leds[i]] = red;
++            highlighted[fn_leds[i]] = true;
++        }
++    }
++
++    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
++        if (highlighted[i]) {
++            pixels[i] = complementary_color(pixels[i]);
 +        }
 +    }
 +}
@@ -98,7 +116,7 @@ index 2c257d7f..ad37045a 100644
  static void zmk_rgb_underglow_tick(struct k_work *work) {
      switch (state.current_effect) {
      case UNDERGLOW_EFFECT_SOLID:
-@@ -156,8 +203,12 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
+@@ -156,8 +221,12 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
      case UNDERGLOW_EFFECT_SWIRL:
          zmk_rgb_underglow_effect_swirl();
          break;
