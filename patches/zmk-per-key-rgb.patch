@@ -3,7 +3,7 @@ new file mode 100644
 index 00000000..4684289d
 --- /dev/null
 +++ b/app/dts/bindings/zmk,rgb-key-indicators.yaml
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,47 @@
 +# Copyright (c) 2026 The ZMK Contributors
 +# SPDX-License-Identifier: MIT
 +
@@ -15,17 +15,42 @@ index 00000000..4684289d
 +  capslock-led:
 +    type: int
 +    required: true
-+    description: LED index used for the Caps Lock indicator
 +
 +  fn-layer:
 +    type: int
 +    required: true
-+    description: Layer index whose available functions should be highlighted
 +
-+  fn-leds:
++  fn-common-leds:
 +    type: array
 +    required: true
-+    description: LED indices highlighted while the Fn layer is active
++
++  fn-fkey-leds:
++    type: array
++    required: true
++
++  fn-bluetooth-leds:
++    type: array
++    required: true
++
++  fn-rgb-leds:
++    type: array
++    required: true
++
++  fn-media-leds:
++    type: array
++    required: true
++
++  fn-system-leds:
++    type: array
++    required: true
++
++  fn-editing-leds:
++    type: array
++    required: true
++
++  minimum-saturation:
++    type: int
++    required: true
 diff --git a/app/src/rgb_underglow.c b/app/src/rgb_underglow.c
 index 2c257d7f..ad37045a 100644
 --- a/app/src/rgb_underglow.c
@@ -47,7 +72,7 @@ index 2c257d7f..ad37045a 100644
      UNDERGLOW_EFFECT_NUMBER // Used to track number of underglow effects
  };
  
-@@ -142,6 +145,68 @@ static void zmk_rgb_underglow_effect_swirl(void) {
+@@ -142,6 +145,117 @@ static void zmk_rgb_underglow_effect_swirl(void) {
      state.animation_step = state.animation_step % HUE_MAX;
  }
  
@@ -65,25 +90,70 @@ index 2c257d7f..ad37045a 100644
 +#if DT_HAS_CHOSEN(zmk_rgb_key_indicators)
 +#define KEY_INDICATORS DT_CHOSEN(zmk_rgb_key_indicators)
 +
-+static const uint8_t fn_leds[] = DT_PROP(KEY_INDICATORS, fn_leds);
++static const uint8_t fn_common_leds[] = DT_PROP(KEY_INDICATORS, fn_common_leds);
++static const uint8_t fn_fkey_leds[] = DT_PROP(KEY_INDICATORS, fn_fkey_leds);
++static const uint8_t fn_bluetooth_leds[] = DT_PROP(KEY_INDICATORS, fn_bluetooth_leds);
++static const uint8_t fn_rgb_leds[] = DT_PROP(KEY_INDICATORS, fn_rgb_leds);
++static const uint8_t fn_media_leds[] = DT_PROP(KEY_INDICATORS, fn_media_leds);
++static const uint8_t fn_system_leds[] = DT_PROP(KEY_INDICATORS, fn_system_leds);
++static const uint8_t fn_editing_leds[] = DT_PROP(KEY_INDICATORS, fn_editing_leds);
 +
 +BUILD_ASSERT(DT_PROP(KEY_INDICATORS, capslock_led) < STRIP_NUM_PIXELS,
 +             "Caps Lock LED index exceeds the RGB chain length");
++BUILD_ASSERT(DT_PROP(KEY_INDICATORS, minimum_saturation) <= SAT_MAX,
++             "RGB indicator minimum saturation exceeds 100");
 +
 +#define ASSERT_FN_LED(node_id, prop, idx)                                                         \
 +    BUILD_ASSERT(DT_PROP_BY_IDX(node_id, prop, idx) < STRIP_NUM_PIXELS,                           \
 +                 "Fn LED index exceeds the RGB chain length");
-+DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_common_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_fkey_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_bluetooth_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_rgb_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_media_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_system_leds, ASSERT_FN_LED)
++DT_FOREACH_PROP_ELEM(KEY_INDICATORS, fn_editing_leds, ASSERT_FN_LED)
 +
-+static struct led_rgb complementary_color(struct led_rgb color) {
++static struct zmk_led_hsb rgb_to_hsb(struct led_rgb color) {
 +    const uint8_t low = MIN(color.r, MIN(color.g, color.b));
 +    const uint8_t high = MAX(color.r, MAX(color.g, color.b));
++    struct zmk_led_hsb hsb = {h : 0, s : 0, b : (high * BRT_MAX + 127) / 255};
 +
-+    return (struct led_rgb){
-+        r : high + low - color.r,
-+        g : high + low - color.g,
-+        b : high + low - color.b
-+    };
++    if (high == low) {
++        return hsb;
++    }
++
++    const int delta = high - low;
++    hsb.s = (delta * SAT_MAX + high / 2) / high;
++
++    int hue;
++    if (high == color.r) {
++        hue = 60 * ((int)color.g - color.b) / delta;
++    } else if (high == color.g) {
++        hue = 120 + 60 * ((int)color.b - color.r) / delta;
++    } else {
++        hue = 240 + 60 * ((int)color.r - color.g) / delta;
++    }
++
++    hsb.h = (hue + HUE_MAX) % HUE_MAX;
++    return hsb;
++}
++
++static struct led_rgb rotate_hue(struct led_rgb color, uint16_t offset) {
++    if (color.r == 0 && color.g == 0 && color.b == 0) {
++        return color;
++    }
++
++    struct zmk_led_hsb hsb = rgb_to_hsb(color);
++    hsb.h = (hsb.h + offset) % HUE_MAX;
++    hsb.s = MAX(hsb.s, DT_PROP(KEY_INDICATORS, minimum_saturation));
++    return hsb_to_rgb(hsb);
++}
++
++static void mark_group(uint16_t *offsets, const uint8_t *leds, size_t len, uint16_t hue_offset) {
++    for (size_t i = 0; i < len; i++) {
++        offsets[leds[i]] = hue_offset;
++    }
 +}
 +
 +static void zmk_rgb_underglow_apply_key_indicators(void) {
@@ -91,21 +161,25 @@ index 2c257d7f..ad37045a 100644
 +        return;
 +    }
 +
-+    bool highlighted[STRIP_NUM_PIXELS] = {};
++    uint16_t hue_offsets[STRIP_NUM_PIXELS] = {};
 +
 +    if (zmk_hid_indicators_get_current_profile() & BIT(1)) {
-+        highlighted[DT_PROP(KEY_INDICATORS, capslock_led)] = true;
++        hue_offsets[DT_PROP(KEY_INDICATORS, capslock_led)] = 180;
 +    }
 +
 +    if (zmk_keymap_layer_active(DT_PROP(KEY_INDICATORS, fn_layer))) {
-+        for (int i = 0; i < ARRAY_SIZE(fn_leds); i++) {
-+            highlighted[fn_leds[i]] = true;
-+        }
++        mark_group(hue_offsets, fn_common_leds, ARRAY_SIZE(fn_common_leds), 180);
++        mark_group(hue_offsets, fn_fkey_leds, ARRAY_SIZE(fn_fkey_leds), 165);
++        mark_group(hue_offsets, fn_bluetooth_leds, ARRAY_SIZE(fn_bluetooth_leds), 195);
++        mark_group(hue_offsets, fn_rgb_leds, ARRAY_SIZE(fn_rgb_leds), 150);
++        mark_group(hue_offsets, fn_media_leds, ARRAY_SIZE(fn_media_leds), 210);
++        mark_group(hue_offsets, fn_system_leds, ARRAY_SIZE(fn_system_leds), 135);
++        mark_group(hue_offsets, fn_editing_leds, ARRAY_SIZE(fn_editing_leds), 225);
 +    }
 +
 +    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-+        if (highlighted[i]) {
-+            pixels[i] = complementary_color(pixels[i]);
++        if (hue_offsets[i] != 0) {
++            pixels[i] = rotate_hue(pixels[i], hue_offsets[i]);
 +        }
 +    }
 +}
@@ -116,7 +190,7 @@ index 2c257d7f..ad37045a 100644
  static void zmk_rgb_underglow_tick(struct k_work *work) {
      switch (state.current_effect) {
      case UNDERGLOW_EFFECT_SOLID:
-@@ -156,8 +221,12 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
+@@ -156,8 +270,12 @@ static void zmk_rgb_underglow_tick(struct k_work *work) {
      case UNDERGLOW_EFFECT_SWIRL:
          zmk_rgb_underglow_effect_swirl();
          break;

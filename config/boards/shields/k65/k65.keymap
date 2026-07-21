@@ -143,9 +143,9 @@
 		rgb_layer {
 			bindings = <
 			&kp GRAVE  		&kp F1        &kp F2         	&kp F3          &kp F4          &kp F5          &kp F6            &kp F7           &kp F8      	 	&kp F9      	   	&kp F10     		&kp F11     		&kp F12     &kp DEL
-			&bt_cls    		&bt1		  &bt2				&bt3       	  	&bt4	   		&bt5            &kp Y             &rgb_ug RGB_BRI  &kp C_MUTE   	&kp C_VOLUME_UP  	&kp P       		&kp LBKT    		&kp RBKT    &kp BSLH
-			&bt BT_CLR_ALL  &kp A         &kp S          	&kp D           &kp F           &kp G           &rgb_ug RGB_SPD   &rgb_ug RGB_BRD  &rgb_ug RGB_SPI 	&kp C_VOLUME_DOWN	&kp SEMI    		&kp DQT     		&none       &kp ENTER
-			&none      		&kp LSHIFT    &rgb_ug RGB_EFR	&rgb_ug RGB_TOG &rgb_ug RGB_EFF &rgb_ug RGB_HUI &rgb_ug RGB_HUD   &kp N            &kp M       	 	&kp C_PREVIOUS	   	&kp C_PLAY_PAUSE 	&kp C_FAST_FORWARD  &none       &ext_power EP_TOG
+			&bt_cls    		&bt1		  &bt2				&bt3       	  	&bt4	   		&bt5            &none             &rgb_ug RGB_BRI  &kp C_MUTE   	&kp C_VOLUME_UP  	&kp PG_UP      		&kp HOME   			&kp INSERT 	&none
+			&bt BT_CLR_ALL  &none         &none          	&none           &none           &none           &rgb_ug RGB_SPD   &rgb_ug RGB_BRD  &rgb_ug RGB_SPI 	&kp C_VOLUME_DOWN	&kp PG_DN  			&kp END    			&none       &none
+			&none      		&kp LSHIFT    &rgb_ug RGB_EFR	&rgb_ug RGB_TOG &rgb_ug RGB_EFF &rgb_ug RGB_HUI &rgb_ug RGB_HUD   &kp PRINTSCREEN  &kp M       	 	&kp C_PREVIOUS	   	&kp C_PLAY_PAUSE 	&kp C_FAST_FORWARD  &none       &ext_power EP_TOG
 			&kp LCTL   		&kp LGUI      &kp LALT       	&none           &kp SPACE       &none           &none             &none            &none       	 	&none       	   	&mo 1       		&studio_unlock 		&soft_off   &bootloader
 			>;
 		};
