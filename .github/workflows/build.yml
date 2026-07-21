@@ -43,10 +43,9 @@ jobs:
             tools/
             zephyr/
             bootloader/
-            zmk/
-          key: ${{ runner.os }}-zmk-${{ hashFiles('config/west.yml', 'build.yaml', 'patches/*.patch') }}
+          key: ${{ runner.os }}-zmk-v2-${{ hashFiles('config/west.yml', 'build.yaml', 'patches/*.patch') }}
           restore-keys: |
-            ${{ runner.os }}-zmk-
+            ${{ runner.os }}-zmk-v2-
 
       - name: Initialize west workspace
         run: west init -l config
